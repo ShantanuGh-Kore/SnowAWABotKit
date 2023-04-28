@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Agent asssitance form</title>
+   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+   <style>
+      .row {
+         padding: 10px 0;
+         font-size: 18px;
+      }
+
+      .row .frstBlck {
+         width: 20%;
+      }
+   </style>
+</head>
+
+<body>
+   <div class="container">
+      <h1></h1>
+   </div>
+   <div class="container">
+      <div class="row">
+         <div class="col-span-6 frstBlck">Userid:</div>
+         <div class="col-span-6 sndBlck userId"> </div>
+      </div>
+      <div class="row">
+         <div class="col-span-6 frstBlck">User input:</div>
+         <div class="col-span-6 sndBlck userInput"> </div>
+      </div>
+      <div class="row">
+         <div class="col-span-6 frstBlck">New utterance:</div>
+         <div class="col-span-6 sndBlck"> <textarea id="newUtterance"> </TEXTAREA> </div>
+      </div>
+      <div class="row">
+         <div class="col-span-6 frstBlck"></div>
+         <div class="col-span-6 sndBlck"> <button type="button" id="update">Update</button> </div>
+      </div>
+   </div>
+   <script type="text/javascript" src="js/lib/jquery.js"></script>
+   <script type="text/javascript">
+      var urlParams = decodeURIComponent(new URLSearchParams(window.location.search));
+      var bkUrl = window.location.origin + "/snow/sendToBotUser";
+      console.log(bkUrl, urlParams);
+      urlParams = urlParams.startsWith('?') ? urlParams.substring(1, urlParams.length) : urlParams;
+      urlParams = urlParams.endsWith('=') ? urlParams.substring(0, urlParams.length - 1) : urlParams;
+      console.log(urlParams);
+      var parsedParams;
+         try {
+            parsedParams = JSON.parse(urlParams);
+         } catch (err) { console.log("failure in parsing query parameters : ", urlParams) }
+      $('.userId').text(parsedParams.userId  );
+      $('.userInput').text(parsedParams.userInput.replace(/\+/g, ' ').trim());
+
+      $('#update').click(function () {
+         var newUtterance = $("#newUtterance").val().trim();
+         var xhrBotKitPost = new XMLHttpRequest();
+         var json = JSON.stringify({
+            "formatted_message": $("#newUtterance").val().trim(),
+            userId: (parsedParams.userId) ? parsedParams.userId : undefined
+         });
+         console.log("sendToBotUser body : ", json);
+
+         xhrBotKitPost.open("POST", bkUrl, true);
+         xhrBotKitPost.setRequestHeader('Content-type', 'application/json');
+
+         xhrBotKitPost.onload = function () {
+            if (xhrBotKitPost.readyState == 4 && xhrBotKitPost.status == "200") {
+               console.log("BotKIt update resp : ", xhrBotKitPost.response);
+               alert("Posted Successfully");
+               window.close();
+            }
+            else
+               location.href = "/";
+         }
+         xhrBotKitPost.send(json);
+      });
+   </script>
+</body>
+</html>
